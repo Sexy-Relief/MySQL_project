@@ -1,0 +1,25 @@
+set sql_safe_updates=0;
+
+delete from online_order;
+delete from reorder;
+delete from offline_order;
+delete from warestock;
+delete from storestock;
+delete from warehouse;
+delete from offlinestore;
+delete from _order;
+delete from shipping;
+delete from customer;
+delete from product;
+
+DROP TABLE online_order;
+DROP TABLE reorder;
+DROP TABLE offline_order;
+DROP TABLE warestock;
+DROP TABLE storestock;
+DROP TABLE warehouse;
+DROP TABLE offlinestore;
+DROP TABLE _order;
+DROP TABLE shipping;
+DROP TABLE customer;
+DROP TABLE product;

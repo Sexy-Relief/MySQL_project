@@ -1,0 +1,981 @@
+
+CREATE TABLE customer
+(
+	customer_id           INTEGER NOT NULL,
+	customer_name         VARCHAR(20) NOT NULL,
+	phone_num	VARCHAR(30) NOT NULL,
+	account_num           VARCHAR(30) NULL,
+	card_num              VARCHAR(30) NULL,
+	card_company          VARCHAR(20) NULL,
+    PRIMARY KEY (customer_id)
+);
+
+CREATE TABLE offline_order
+(
+	order_id              INTEGER NOT NULL,
+	product_id            INTEGER NOT NULL,
+	store_id              INTEGER NOT NULL,
+    PRIMARY KEY (order_id)
+);
+
+CREATE TABLE offlinestore
+(
+	store_id              INTEGER NOT NULL,
+	store_name            VARCHAR(50) NOT NULL,
+	region                VARCHAR(20) NOT NULL,
+	PRIMARY KEY (store_id)
+);
+
+CREATE TABLE online_order
+(
+	order_id              INTEGER NOT NULL,
+	product_id            INTEGER NOT NULL,
+	tracking_num          INTEGER NOT NULL UNIQUE,
+	warehouse_id          INTEGER NOT NULL,
+    PRIMARY KEY (order_id)
+);
+
+CREATE TABLE _order
+(
+	order_id              INTEGER NOT NULL,
+	product_id            INTEGER NOT NULL,
+	customer_id           INTEGER NOT NULL,
+	date_year             INTEGER NOT NULL
+		CONSTRAINT  date_year CHECK (date_year BETWEEN 1900 AND 2100),
+	date_mon              INTEGER NOT NULL
+		CONSTRAINT  date_mon CHECK (date_mon BETWEEN 1 AND 12),
+	date_day              INTEGER NOT NULL
+		CONSTRAINT  date_day CHECK (date_day BETWEEN 1 AND 31),
+	num_of_order          INTEGER NOT NULL
+		CONSTRAINT  num_of_order CHECK (num_of_order >= 0),
+	order_type            VARCHAR(20) NOT NULL,
+	PRIMARY KEY (order_id)
+);
+
+CREATE TABLE product
+(
+	product_id            INTEGER NOT NULL,
+	product_name          VARCHAR(20) NOT NULL,
+	_type                  VARCHAR(20) NOT NULL,
+	price                 NUMERIC(10,2) NULL
+		CONSTRAINT  price CHECK (price >= 0),
+	manufacturer          VARCHAR(20) NULL,
+	gateway               VARCHAR(20) NULL,
+    PRIMARY KEY (product_id)
+);
+
+CREATE TABLE reorder
+(
+	order_id              INTEGER NOT NULL,
+	product_id            INTEGER NOT NULL,
+	warehouse_id          INTEGER NOT NULL,
+	store_id              INTEGER NOT NULL,
+    PRIMARY KEY (order_id)
+);
+
+CREATE TABLE shipping
+(
+	tracking_num          INTEGER NOT NULL,
+	shipping_company      VARCHAR(20) NOT NULL,
+	address               VARCHAR(50) NOT NULL,
+	isarrived             INTEGER NOT NULL
+		CONSTRAINT  isarrived CHECK (isarrived BETWEEN 0 AND 1),
+	got_problem           INTEGER NOT NULL
+		CONSTRAINT  got_problem CHECK (got_problem BETWEEN 0 AND 1),
+	PRIMARY KEY (tracking_num)
+);
+
+CREATE TABLE storestock
+(
+	product_id            INTEGER NOT NULL,
+	store_id              INTEGER NOT NULL,
+	num_of_storestock        INTEGER NOT NULL
+		CONSTRAINT  num_of_storestock CHECK (num_of_storestock >= 0),
+	PRIMARY KEY (product_id,store_id)
+);
+
+CREATE TABLE warehouse
+(
+	warehouse_id          INTEGER NOT NULL,
+	warehouse_name        VARCHAR(50) NOT NULL,
+    PRIMARY KEY (warehouse_id)
+);
+
+CREATE TABLE warestock
+(
+	product_id            INTEGER NOT NULL,
+	warehouse_id          INTEGER NOT NULL,
+	num_of_warestock       INTEGER NOT NULL
+		CONSTRAINT  num_of_warestock CHECK (num_of_warestock >= 0),
+	PRIMARY KEY (product_id,warehouse_id)
+);
+
+ALTER TABLE offline_order
+	ADD FOREIGN KEY (product_id,store_id) REFERENCES storestock(product_id,store_id)
+;
+
+
+ALTER TABLE offline_order
+	ADD FOREIGN KEY (order_id) REFERENCES _order(order_id)
+		ON DELETE CASCADE
+;
+
+
+
+ALTER TABLE online_order
+	ADD FOREIGN KEY (tracking_num) REFERENCES shipping(tracking_num)
+;
+
+
+ALTER TABLE online_order
+	ADD FOREIGN KEY (product_id,warehouse_id) REFERENCES warestock(product_id,warehouse_id)
+;
+
+
+ALTER TABLE online_order
+	ADD FOREIGN KEY (order_id) REFERENCES _order(order_id)
+		ON DELETE CASCADE
+;
+
+
+
+ALTER TABLE _order
+	ADD FOREIGN KEY (product_id) REFERENCES product(product_id)
+;
+
+
+ALTER TABLE _order
+	ADD FOREIGN KEY (customer_id) REFERENCES customer(customer_id)
+;
+
+
+
+ALTER TABLE reorder
+	ADD FOREIGN KEY (product_id,warehouse_id) REFERENCES warestock(product_id,warehouse_id)
+;
+
+
+ALTER TABLE reorder
+	ADD FOREIGN KEY (product_id,store_id) REFERENCES storestock(product_id,store_id)
+;
+
+
+ALTER TABLE reorder
+	ADD FOREIGN KEY (order_id) REFERENCES _order(order_id)
+		ON DELETE CASCADE
+;
+
+
+
+ALTER TABLE storestock
+	ADD FOREIGN KEY (store_id) REFERENCES offlinestore(store_id)
+;
+
+
+ALTER TABLE storestock
+	ADD FOREIGN KEY (product_id) REFERENCES product(product_id)
+;
+
+
+
+ALTER TABLE warestock
+	ADD FOREIGN KEY (warehouse_id) REFERENCES warehouse(warehouse_id)
+;
+
+
+ALTER TABLE warestock
+	ADD FOREIGN KEY (product_id) REFERENCES product(product_id)
+;
+
+insert into product values (10001,'MDR-10RBT','headphone',200.56,'SONY','SONY');
+insert into product values (10002,'MDR-1RBT','headphone',389.12,'SONY','SONY');
+insert into product values (10003,'Galaxy S22','smartphone',700.23,'SAMSUNG','Android');
+insert into product values (10004,'Iphone12','smartphone',999.12,'APPLE','MAC');
+insert into product values (10005,'Galaxy Buzz2','earphone',100.98,'SAMSUNG','Android');
+insert into product values (10006,'Airpod Pro','earphone',350.22,'APPLE','MAC');
+insert into product values (10007,'G102','mouse',20.99,'logitec',NULL);
+insert into product values (10008,'G500','mouse',200.88,'logitec',NULL);
+insert into product values (10009,'skymoon','keyboard',120.66,'ABKO',NULL);
+insert into product values (10010,'endeavor','keyboard',110.56,'COX',NULL);
+insert into product values (10011,'gram19','laptop',890.00,'LG','Windows');
+insert into product values (10012,'vivobook 2022','laptop',780.56,'ASUS','FREE-DOS');
+insert into product values (10013,'RTX3070','GPU',800.22,'MSI',NULL);
+insert into product values (10014,'Ryzen 5600X','CPU',350.77,'Ryzen','Ryzen');
+insert into product values (10015,'MK-80','speaker',15.33,'Britz',NULL);
+insert into product values (10016,'zenbook 2022','laptop',1089.00,'ASUS','FREE-DOS');
+insert into product values (10017,'vivobook 2022 MINI','laptop',680.21,'ASUS','FREE-DOS');
+insert into product values (10018,'RTX3080TI','GPU',1230.22,'MSI',NULL);
+insert into product values (10019,'i7 12700k','CPU',400.67,'Intel','Intel');
+insert into product values (10020,'Bose QC45','headphone',380.89,'Bose',NULL);
+insert into customer values (20001,'John','010-1111-1111',NULL,'4576-5574-1254-5686','NH');
+insert into customer values (20002,'Amy','010-2222-2222','565-00-207556',NULL,NULL);
+insert into customer values (20003,'Charile','010-3333-3333',NULL,'4599-5568-9846-7198','Hyundai');
+insert into customer values (20004,'Jerry','010-4444-4444',NULL,'4289-4891-2598-4168','BC');
+insert into customer values (20005,'Tom','010-5555-5555',NULL,'4576-5574-1254-5686','NH');
+insert into customer values (20006,'Dohyun','010-4630-9627','899-01-299856',NULL,NULL);
+insert into customer values (20007,'Karina','010-6666-6666','984-02-596843',NULL,NULL);
+insert into customer values (20008,'Winter','010-7777-7777',NULL,'9248-6148-4793-8184','Samsung');
+insert into customer values (20009,'Ningning','010-8888-8888',NULL,'8461-1648-7956-1789','Kakao');
+insert into customer values (20010,'Jururu','010-9999-9999','879-03-768916',NULL,NULL);
+insert into customer values (20011,'Gosegu','010-0000-0000','899-04-148694',NULL,NULL);
+insert into customer values (20012,'Jingburger','010-1212-1212',NULL,'9248-6148-4793-8184','Samsung');
+insert into customer values (20013,'Lilpa','010-2323-2323',NULL,'8461-1648-7956-1789','Kakao');
+insert into customer values (20014,'Viichan','010-3434-3434','418-05-687466',NULL,NULL);
+insert into customer values (20015,'Ine','010-5656-5656','419-06-279987',NULL,NULL);
+insert into customer values (20016,'Katarina','010-7878-7878',NULL,NULL,NULL);
+insert into _order values (30001,10009,20002,2021,7,17,11,"reorder");
+insert into _order values (30002,10010,20010,2021,10,26,8,"reorder");
+insert into _order values (30003,10008,20003,2021,4,17,9,"online");
+insert into _order values (30004,10015,20015,2021,12,3,8,"reorder");
+insert into _order values (30005,10002,20011,2021,5,18,8,"reorder");
+insert into _order values (30006,10014,20003,2021,8,25,9,"reorder");
+insert into _order values (30007,10002,20002,2022,2,16,12,"offline");
+insert into _order values (30008,10012,20003,2021,7,26,12,"offline");
+insert into _order values (30009,10010,20009,2021,5,10,9,"online");
+insert into _order values (30010,10008,20006,2013,2,13,14,"offline");
+insert into _order values (30011,10014,20001,2010,3,28,14,"reorder");
+insert into _order values (30012,10001,20005,2022,5,9,15,"reorder");
+insert into _order values (30013,10003,20014,2021,7,19,15,"online");
+insert into _order values (30014,10005,20003,2021,10,9,11,"online");
+insert into _order values (30015,10006,20013,2011,7,22,1,"offline");
+insert into _order values (30016,10006,20011,2021,3,28,11,"reorder");
+insert into _order values (30017,10002,20011,2016,10,2,10,"online");
+insert into _order values (30018,10012,20005,2021,3,26,2,"online");
+insert into _order values (30019,10012,20009,2021,2,2,13,"reorder");
+insert into _order values (30020,10006,20007,2010,5,15,8,"online");
+insert into _order values (30021,10001,20008,2017,2,24,8,"offline");
+insert into _order values (30022,10002,20002,2015,8,21,14,"offline");
+insert into _order values (30023,10013,20011,2021,4,6,12,"reorder");
+insert into _order values (30024,10002,20003,2010,1,15,11,"offline");
+insert into _order values (30025,10013,20002,2020,5,6,15,"reorder");
+insert into _order values (30026,10002,20011,2021,4,19,9,"offline");
+insert into _order values (30027,10011,20009,2021,8,9,10,"reorder");
+insert into _order values (30028,10008,20004,2019,11,26,13,"offline");
+insert into _order values (30029,10005,20003,2017,2,22,12,"reorder");
+insert into _order values (30030,10009,20004,2015,8,20,12,"offline");
+insert into _order values (30031,10001,20004,2021,8,18,8,"reorder");
+insert into _order values (30032,10007,20015,2021,8,19,7,"reorder");
+insert into _order values (30033,10004,20008,2021,5,2,13,"offline");
+insert into _order values (30034,10010,20005,2015,1,20,2,"online");
+insert into _order values (30035,10013,20006,2016,6,9,11,"offline");
+insert into _order values (30036,10005,20014,2016,3,4,9,"online");
+insert into _order values (30037,10011,20001,2021,5,18,1,"online");
+insert into _order values (30038,10005,20014,2011,8,2,7,"online");
+insert into _order values (30039,10012,20015,2020,1,8,11,"offline");
+insert into _order values (30040,10008,20011,2016,8,26,5,"online");
+insert into _order values (30041,10004,20008,2021,4,10,15,"offline");
+insert into _order values (30042,10014,20010,2022,5,25,7,"online");
+insert into _order values (30043,10014,20015,2015,4,3,14,"online");
+insert into _order values (30044,10012,20003,2021,3,11,6,"offline");
+insert into _order values (30045,10010,20014,2021,3,25,8,"online");
+insert into _order values (30046,10016,20003,2021,3,11,9,"offline");
+insert into _order values (30047,10017,20009,2021,4,21,4,"offline");
+insert into _order values (30048,10018,20008,2021,5,3,11,"offline");
+insert into _order values (30049,10019,20001,2021,5,9,7,"offline");
+insert into _order values (30050,10020,20011,2021,10,1,2,"offline");
+insert into _order values (30051,10018,20013,2020,1,18,6,"offline");
+insert into _order values (30052,10017,20002,2011,12,7,6,"offline");
+insert into _order values (30053,10016,20009,2019,8,13,6,"offline");
+insert into _order values (30054,10019,20011,2020,2,28,6,"offline");
+insert into _order values (30055,10020,20012,2019,8,11,6,"offline");
+insert into shipping values (100001,'hanjin','Seoul City, Mapogu,backbeomro 55',1,0);
+insert into shipping values (100002,'hanjin','Busan City, Sooyeonggu,sooyeongro 178-2',1,0);
+insert into shipping values (100003,'hanjin','Busan City, Haeundaegu,Haeundaero 610-2',0,1);
+insert into shipping values (100004,'hanjin','Seoul City, Gangnamgu,samsungro 115-7',1,0);
+insert into shipping values (100005,'hanjin','Seoul City, Yongsangu, Seobinggoro 17',0,1);
+insert into shipping values (100006,'fedex','Busan City, Sooyeonggu,sooyeongro 255',1,0);
+insert into shipping values (100007,'fedex','Seoul City, Mapogu,backbeomro 20',1,0);
+insert into shipping values (100008,'fedex','Busan City, Haeundaegu,Haeundaero 620',1,0);
+insert into shipping values (100009,'fedex','Seoul City, Gangnamgu,samsungro 119-2',1,0);
+insert into shipping values (100010,'fedex','Busan City, bookgu,haksaro 330',1,0);
+insert into shipping values (100011,'cj','Jeju City, joongangro 53',1,0);
+insert into shipping values (100012,'lotte','Jeju City, joongangro 55-2',1,0);
+insert into shipping values (100013,'fedex','Daegu City, Joonggu,dongsungro 80',1,0);
+insert into shipping values (100014,'cj','Daegu City, Joonggu,dongsungro 77-1',0,0);
+insert into shipping values (100015,'coupang','Daegu City, Seogu,Seodaeguro 141',0,0);
+insert into shipping values (100016,'lotte','Daegu City, Donggu,gonghangro 248',0,0);
+insert into warehouse values(40001,'busan warehouse');
+insert into warehouse values(40002,'seoul warehouse');
+insert into warehouse values(40003,'daegu warehouse');
+insert into warehouse values(40004,'daejeon warehouse');
+insert into warehouse values(40005,'ulsan warehouse');
+insert into warehouse values(40006,'incheon warehouse');
+insert into warehouse values(40007,'sejong warehouse');
+insert into warehouse values(40008,'jeju warehouse');
+insert into warehouse values(40009,'california warehouse');
+insert into warehouse values(40010,'mexico warehouse');
+insert into warehouse values(40011,'japan warehouse');
+insert into warehouse values(40012,'china warehouse');
+insert into warehouse values(40013,'hawai warehouse');
+insert into warehouse values(40014,'dokdo warehouse');
+insert into warehouse values(40015,'france warehouse');
+insert into warestock values (10001,40001,74);
+insert into warestock values (10002,40001,21);
+insert into warestock values (10003,40001,29);
+insert into warestock values (10004,40001,53);
+insert into warestock values (10005,40001,192);
+insert into warestock values (10006,40001,22);
+insert into warestock values (10007,40001,176);
+insert into warestock values (10008,40001,90);
+insert into warestock values (10009,40001,29);
+insert into warestock values (10010,40001,86);
+insert into warestock values (10011,40001,125);
+insert into warestock values (10012,40001,193);
+insert into warestock values (10013,40001,1);
+insert into warestock values (10014,40001,171);
+insert into warestock values (10015,40001,172);
+insert into warestock values (10016,40001,168);
+insert into warestock values (10017,40001,9);
+insert into warestock values (10018,40001,124);
+insert into warestock values (10019,40001,136);
+insert into warestock values (10020,40001,44);
+insert into warestock values (10001,40002,150);
+insert into warestock values (10002,40002,70);
+insert into warestock values (10003,40002,141);
+insert into warestock values (10004,40002,6);
+insert into warestock values (10005,40002,168);
+insert into warestock values (10006,40002,141);
+insert into warestock values (10007,40002,160);
+insert into warestock values (10008,40002,173);
+insert into warestock values (10009,40002,182);
+insert into warestock values (10010,40002,101);
+insert into warestock values (10011,40002,68);
+insert into warestock values (10012,40002,164);
+insert into warestock values (10013,40002,105);
+insert into warestock values (10014,40002,177);
+insert into warestock values (10015,40002,82);
+insert into warestock values (10016,40002,6);
+insert into warestock values (10017,40002,26);
+insert into warestock values (10018,40002,147);
+insert into warestock values (10019,40002,32);
+insert into warestock values (10020,40002,56);
+insert into warestock values (10001,40003,113);
+insert into warestock values (10002,40003,94);
+insert into warestock values (10003,40003,149);
+insert into warestock values (10004,40003,117);
+insert into warestock values (10005,40003,64);
+insert into warestock values (10006,40003,153);
+insert into warestock values (10007,40003,28);
+insert into warestock values (10008,40003,143);
+insert into warestock values (10009,40003,23);
+insert into warestock values (10010,40003,124);
+insert into warestock values (10011,40003,39);
+insert into warestock values (10012,40003,117);
+insert into warestock values (10013,40003,169);
+insert into warestock values (10014,40003,144);
+insert into warestock values (10015,40003,174);
+insert into warestock values (10016,40003,72);
+insert into warestock values (10017,40003,55);
+insert into warestock values (10018,40003,42);
+insert into warestock values (10019,40003,89);
+insert into warestock values (10020,40003,162);
+insert into warestock values (10001,40004,115);
+insert into warestock values (10002,40004,136);
+insert into warestock values (10003,40004,34);
+insert into warestock values (10004,40004,25);
+insert into warestock values (10005,40004,184);
+insert into warestock values (10006,40004,104);
+insert into warestock values (10007,40004,22);
+insert into warestock values (10008,40004,184);
+insert into warestock values (10009,40004,152);
+insert into warestock values (10010,40004,189);
+insert into warestock values (10011,40004,117);
+insert into warestock values (10012,40004,136);
+insert into warestock values (10013,40004,182);
+insert into warestock values (10014,40004,114);
+insert into warestock values (10015,40004,40);
+insert into warestock values (10016,40004,45);
+insert into warestock values (10017,40004,133);
+insert into warestock values (10018,40004,4);
+insert into warestock values (10019,40004,154);
+insert into warestock values (10020,40004,11);
+insert into warestock values (10001,40005,112);
+insert into warestock values (10002,40005,195);
+insert into warestock values (10003,40005,66);
+insert into warestock values (10004,40005,123);
+insert into warestock values (10005,40005,116);
+insert into warestock values (10006,40005,170);
+insert into warestock values (10007,40005,25);
+insert into warestock values (10008,40005,32);
+insert into warestock values (10009,40005,59);
+insert into warestock values (10010,40005,104);
+insert into warestock values (10011,40005,39);
+insert into warestock values (10012,40005,167);
+insert into warestock values (10013,40005,154);
+insert into warestock values (10014,40005,22);
+insert into warestock values (10015,40005,154);
+insert into warestock values (10016,40005,70);
+insert into warestock values (10017,40005,53);
+insert into warestock values (10018,40005,193);
+insert into warestock values (10019,40005,10);
+insert into warestock values (10020,40005,4);
+insert into warestock values (10001,40006,82);
+insert into warestock values (10002,40006,106);
+insert into warestock values (10003,40006,110);
+insert into warestock values (10004,40006,114);
+insert into warestock values (10005,40006,115);
+insert into warestock values (10006,40006,92);
+insert into warestock values (10007,40006,19);
+insert into warestock values (10008,40006,120);
+insert into warestock values (10009,40006,136);
+insert into warestock values (10010,40006,165);
+insert into warestock values (10011,40006,47);
+insert into warestock values (10012,40006,75);
+insert into warestock values (10013,40006,84);
+insert into warestock values (10014,40006,193);
+insert into warestock values (10015,40006,169);
+insert into warestock values (10016,40006,126);
+insert into warestock values (10017,40006,63);
+insert into warestock values (10018,40006,100);
+insert into warestock values (10019,40006,27);
+insert into warestock values (10020,40006,70);
+insert into warestock values (10001,40007,180);
+insert into warestock values (10002,40007,119);
+insert into warestock values (10003,40007,114);
+insert into warestock values (10004,40007,91);
+insert into warestock values (10005,40007,99);
+insert into warestock values (10006,40007,77);
+insert into warestock values (10007,40007,165);
+insert into warestock values (10008,40007,59);
+insert into warestock values (10009,40007,58);
+insert into warestock values (10010,40007,134);
+insert into warestock values (10011,40007,125);
+insert into warestock values (10012,40007,73);
+insert into warestock values (10013,40007,176);
+insert into warestock values (10014,40007,11);
+insert into warestock values (10015,40007,36);
+insert into warestock values (10016,40007,182);
+insert into warestock values (10017,40007,66);
+insert into warestock values (10018,40007,106);
+insert into warestock values (10019,40007,9);
+insert into warestock values (10020,40007,47);
+insert into warestock values (10001,40008,81);
+insert into warestock values (10002,40008,101);
+insert into warestock values (10003,40008,10);
+insert into warestock values (10004,40008,184);
+insert into warestock values (10005,40008,51);
+insert into warestock values (10006,40008,46);
+insert into warestock values (10007,40008,27);
+insert into warestock values (10008,40008,182);
+insert into warestock values (10009,40008,25);
+insert into warestock values (10010,40008,174);
+insert into warestock values (10011,40008,159);
+insert into warestock values (10012,40008,187);
+insert into warestock values (10013,40008,82);
+insert into warestock values (10014,40008,55);
+insert into warestock values (10015,40008,179);
+insert into warestock values (10016,40008,6);
+insert into warestock values (10017,40008,102);
+insert into warestock values (10018,40008,174);
+insert into warestock values (10019,40008,3);
+insert into warestock values (10020,40008,65);
+insert into warestock values (10001,40009,142);
+insert into warestock values (10002,40009,157);
+insert into warestock values (10003,40009,144);
+insert into warestock values (10004,40009,167);
+insert into warestock values (10005,40009,9);
+insert into warestock values (10006,40009,135);
+insert into warestock values (10007,40009,55);
+insert into warestock values (10008,40009,109);
+insert into warestock values (10009,40009,146);
+insert into warestock values (10010,40009,173);
+insert into warestock values (10011,40009,48);
+insert into warestock values (10012,40009,192);
+insert into warestock values (10013,40009,160);
+insert into warestock values (10014,40009,193);
+insert into warestock values (10015,40009,188);
+insert into warestock values (10016,40009,0);
+insert into warestock values (10017,40009,190);
+insert into warestock values (10018,40009,82);
+insert into warestock values (10019,40009,40);
+insert into warestock values (10020,40009,180);
+insert into warestock values (10001,40010,4);
+insert into warestock values (10002,40010,47);
+insert into warestock values (10003,40010,34);
+insert into warestock values (10004,40010,190);
+insert into warestock values (10005,40010,61);
+insert into warestock values (10006,40010,111);
+insert into warestock values (10007,40010,186);
+insert into warestock values (10008,40010,8);
+insert into warestock values (10009,40010,164);
+insert into warestock values (10010,40010,73);
+insert into warestock values (10011,40010,51);
+insert into warestock values (10012,40010,103);
+insert into warestock values (10013,40010,80);
+insert into warestock values (10014,40010,159);
+insert into warestock values (10015,40010,194);
+insert into warestock values (10016,40010,151);
+insert into warestock values (10017,40010,7);
+insert into warestock values (10018,40010,32);
+insert into warestock values (10019,40010,38);
+insert into warestock values (10020,40010,79);
+insert into warestock values (10001,40011,34);
+insert into warestock values (10002,40011,181);
+insert into warestock values (10003,40011,136);
+insert into warestock values (10004,40011,86);
+insert into warestock values (10005,40011,150);
+insert into warestock values (10006,40011,44);
+insert into warestock values (10007,40011,165);
+insert into warestock values (10008,40011,93);
+insert into warestock values (10009,40011,107);
+insert into warestock values (10010,40011,68);
+insert into warestock values (10011,40011,169);
+insert into warestock values (10012,40011,167);
+insert into warestock values (10013,40011,16);
+insert into warestock values (10014,40011,169);
+insert into warestock values (10015,40011,79);
+insert into warestock values (10016,40011,0);
+insert into warestock values (10017,40011,14);
+insert into warestock values (10018,40011,161);
+insert into warestock values (10019,40011,46);
+insert into warestock values (10020,40011,90);
+insert into warestock values (10001,40012,163);
+insert into warestock values (10002,40012,85);
+insert into warestock values (10003,40012,30);
+insert into warestock values (10004,40012,101);
+insert into warestock values (10005,40012,82);
+insert into warestock values (10006,40012,108);
+insert into warestock values (10007,40012,132);
+insert into warestock values (10008,40012,119);
+insert into warestock values (10009,40012,42);
+insert into warestock values (10010,40012,36);
+insert into warestock values (10011,40012,162);
+insert into warestock values (10012,40012,82);
+insert into warestock values (10013,40012,76);
+insert into warestock values (10014,40012,50);
+insert into warestock values (10015,40012,130);
+insert into warestock values (10016,40012,14);
+insert into warestock values (10017,40012,137);
+insert into warestock values (10018,40012,45);
+insert into warestock values (10019,40012,196);
+insert into warestock values (10020,40012,183);
+insert into warestock values (10001,40013,179);
+insert into warestock values (10002,40013,142);
+insert into warestock values (10003,40013,62);
+insert into warestock values (10004,40013,152);
+insert into warestock values (10005,40013,123);
+insert into warestock values (10006,40013,34);
+insert into warestock values (10007,40013,156);
+insert into warestock values (10008,40013,183);
+insert into warestock values (10009,40013,67);
+insert into warestock values (10010,40013,43);
+insert into warestock values (10011,40013,96);
+insert into warestock values (10012,40013,171);
+insert into warestock values (10013,40013,100);
+insert into warestock values (10014,40013,43);
+insert into warestock values (10015,40013,67);
+insert into warestock values (10016,40013,132);
+insert into warestock values (10017,40013,19);
+insert into warestock values (10018,40013,107);
+insert into warestock values (10019,40013,101);
+insert into warestock values (10020,40013,129);
+insert into warestock values (10001,40014,136);
+insert into warestock values (10002,40014,76);
+insert into warestock values (10003,40014,178);
+insert into warestock values (10004,40014,192);
+insert into warestock values (10005,40014,183);
+insert into warestock values (10006,40014,76);
+insert into warestock values (10007,40014,110);
+insert into warestock values (10008,40014,130);
+insert into warestock values (10009,40014,162);
+insert into warestock values (10010,40014,67);
+insert into warestock values (10011,40014,18);
+insert into warestock values (10012,40014,196);
+insert into warestock values (10013,40014,111);
+insert into warestock values (10014,40014,174);
+insert into warestock values (10015,40014,62);
+insert into warestock values (10016,40014,70);
+insert into warestock values (10017,40014,174);
+insert into warestock values (10018,40014,27);
+insert into warestock values (10019,40014,137);
+insert into warestock values (10020,40014,117);
+insert into warestock values (10001,40015,150);
+insert into warestock values (10002,40015,70);
+insert into warestock values (10003,40015,160);
+insert into warestock values (10004,40015,35);
+insert into warestock values (10005,40015,88);
+insert into warestock values (10006,40015,132);
+insert into warestock values (10007,40015,67);
+insert into warestock values (10008,40015,114);
+insert into warestock values (10009,40015,131);
+insert into warestock values (10010,40015,134);
+insert into warestock values (10011,40015,6);
+insert into warestock values (10012,40015,133);
+insert into warestock values (10013,40015,162);
+insert into warestock values (10014,40015,160);
+insert into warestock values (10015,40015,79);
+insert into warestock values (10016,40015,24);
+insert into warestock values (10017,40015,131);
+insert into warestock values (10018,40015,18);
+insert into warestock values (10019,40015,179);
+insert into warestock values (10020,40015,145);
+insert into offlinestore values(50001,'busan store','gwanganri');
+insert into offlinestore values(50002,'gangnam store','gangnam');
+insert into offlinestore values(50003,'mapo store','mapo');
+insert into offlinestore values(50004,'sogang store','sogang');
+insert into offlinestore values(50005,'ilsan store','ilsan');
+insert into offlinestore values(50006,'nowon store','nowon');
+insert into offlinestore values(50007,'jeju store','jeju');
+insert into offlinestore values(50008,'dokyo store','dokyo');
+insert into offlinestore values(50009,'beijing store','beijing');
+insert into offlinestore values(50010,'osaka store','osaka');
+insert into offlinestore values(50011,'manila store','manila');
+insert into offlinestore values(50012,'california store','california');
+insert into offlinestore values(50013,'california store2','california');
+insert into offlinestore values(50014,'daejeon store','daejeon');
+insert into offlinestore values(50015,'gwangju store','gwangju');
+insert into storestock values (10001,50001,42);
+insert into storestock values (10002,50001,67);
+insert into storestock values (10003,50001,3);
+insert into storestock values (10004,50001,134);
+insert into storestock values (10005,50001,56);
+insert into storestock values (10006,50001,145);
+insert into storestock values (10007,50001,54);
+insert into storestock values (10008,50001,32);
+insert into storestock values (10009,50001,30);
+insert into storestock values (10010,50001,98);
+insert into storestock values (10011,50001,157);
+insert into storestock values (10012,50001,57);
+insert into storestock values (10013,50001,141);
+insert into storestock values (10014,50001,48);
+insert into storestock values (10015,50001,185);
+insert into storestock values (10016,50001,172);
+insert into storestock values (10017,50001,116);
+insert into storestock values (10018,50001,49);
+insert into storestock values (10019,50001,1);
+insert into storestock values (10020,50001,137);
+insert into storestock values (10001,50002,168);
+insert into storestock values (10002,50002,177);
+insert into storestock values (10003,50002,81);
+insert into storestock values (10004,50002,130);
+insert into storestock values (10005,50002,181);
+insert into storestock values (10006,50002,56);
+insert into storestock values (10007,50002,64);
+insert into storestock values (10008,50002,158);
+insert into storestock values (10009,50002,86);
+insert into storestock values (10010,50002,190);
+insert into storestock values (10011,50002,144);
+insert into storestock values (10012,50002,142);
+insert into storestock values (10013,50002,73);
+insert into storestock values (10014,50002,85);
+insert into storestock values (10015,50002,124);
+insert into storestock values (10016,50002,135);
+insert into storestock values (10017,50002,78);
+insert into storestock values (10018,50002,14);
+insert into storestock values (10019,50002,149);
+insert into storestock values (10020,50002,95);
+insert into storestock values (10001,50003,82);
+insert into storestock values (10002,50003,62);
+insert into storestock values (10003,50003,29);
+insert into storestock values (10004,50003,187);
+insert into storestock values (10005,50003,183);
+insert into storestock values (10006,50003,130);
+insert into storestock values (10007,50003,80);
+insert into storestock values (10008,50003,168);
+insert into storestock values (10009,50003,54);
+insert into storestock values (10010,50003,120);
+insert into storestock values (10011,50003,55);
+insert into storestock values (10012,50003,1);
+insert into storestock values (10013,50003,152);
+insert into storestock values (10014,50003,176);
+insert into storestock values (10015,50003,167);
+insert into storestock values (10016,50003,9);
+insert into storestock values (10017,50003,121);
+insert into storestock values (10018,50003,84);
+insert into storestock values (10019,50003,178);
+insert into storestock values (10020,50003,169);
+insert into storestock values (10001,50004,38);
+insert into storestock values (10002,50004,28);
+insert into storestock values (10003,50004,13);
+insert into storestock values (10004,50004,68);
+insert into storestock values (10005,50004,40);
+insert into storestock values (10006,50004,140);
+insert into storestock values (10007,50004,161);
+insert into storestock values (10008,50004,136);
+insert into storestock values (10009,50004,2);
+insert into storestock values (10010,50004,50);
+insert into storestock values (10011,50004,85);
+insert into storestock values (10012,50004,64);
+insert into storestock values (10013,50004,120);
+insert into storestock values (10014,50004,90);
+insert into storestock values (10015,50004,84);
+insert into storestock values (10016,50004,136);
+insert into storestock values (10017,50004,96);
+insert into storestock values (10018,50004,109);
+insert into storestock values (10019,50004,75);
+insert into storestock values (10020,50004,17);
+insert into storestock values (10001,50005,173);
+insert into storestock values (10002,50005,170);
+insert into storestock values (10003,50005,62);
+insert into storestock values (10004,50005,166);
+insert into storestock values (10005,50005,97);
+insert into storestock values (10006,50005,147);
+insert into storestock values (10007,50005,76);
+insert into storestock values (10008,50005,94);
+insert into storestock values (10009,50005,11);
+insert into storestock values (10010,50005,91);
+insert into storestock values (10011,50005,56);
+insert into storestock values (10012,50005,34);
+insert into storestock values (10013,50005,146);
+insert into storestock values (10014,50005,22);
+insert into storestock values (10015,50005,97);
+insert into storestock values (10016,50005,145);
+insert into storestock values (10017,50005,121);
+insert into storestock values (10018,50005,162);
+insert into storestock values (10019,50005,20);
+insert into storestock values (10020,50005,139);
+insert into storestock values (10001,50006,43);
+insert into storestock values (10002,50006,37);
+insert into storestock values (10003,50006,8);
+insert into storestock values (10004,50006,35);
+insert into storestock values (10005,50006,16);
+insert into storestock values (10006,50006,119);
+insert into storestock values (10007,50006,42);
+insert into storestock values (10008,50006,72);
+insert into storestock values (10009,50006,73);
+insert into storestock values (10010,50006,137);
+insert into storestock values (10011,50006,75);
+insert into storestock values (10012,50006,69);
+insert into storestock values (10013,50006,104);
+insert into storestock values (10014,50006,134);
+insert into storestock values (10015,50006,79);
+insert into storestock values (10016,50006,152);
+insert into storestock values (10017,50006,28);
+insert into storestock values (10018,50006,105);
+insert into storestock values (10019,50006,95);
+insert into storestock values (10020,50006,56);
+insert into storestock values (10001,50007,28);
+insert into storestock values (10002,50007,71);
+insert into storestock values (10003,50007,17);
+insert into storestock values (10004,50007,59);
+insert into storestock values (10005,50007,129);
+insert into storestock values (10006,50007,6);
+insert into storestock values (10007,50007,157);
+insert into storestock values (10008,50007,86);
+insert into storestock values (10009,50007,65);
+insert into storestock values (10010,50007,191);
+insert into storestock values (10011,50007,76);
+insert into storestock values (10012,50007,150);
+insert into storestock values (10013,50007,137);
+insert into storestock values (10014,50007,152);
+insert into storestock values (10015,50007,141);
+insert into storestock values (10016,50007,55);
+insert into storestock values (10017,50007,19);
+insert into storestock values (10018,50007,28);
+insert into storestock values (10019,50007,88);
+insert into storestock values (10020,50007,163);
+insert into storestock values (10001,50008,193);
+insert into storestock values (10002,50008,95);
+insert into storestock values (10003,50008,126);
+insert into storestock values (10004,50008,101);
+insert into storestock values (10005,50008,184);
+insert into storestock values (10006,50008,157);
+insert into storestock values (10007,50008,192);
+insert into storestock values (10008,50008,119);
+insert into storestock values (10009,50008,128);
+insert into storestock values (10010,50008,122);
+insert into storestock values (10011,50008,87);
+insert into storestock values (10012,50008,120);
+insert into storestock values (10013,50008,59);
+insert into storestock values (10014,50008,191);
+insert into storestock values (10015,50008,12);
+insert into storestock values (10016,50008,146);
+insert into storestock values (10017,50008,132);
+insert into storestock values (10018,50008,76);
+insert into storestock values (10019,50008,2);
+insert into storestock values (10020,50008,59);
+insert into storestock values (10001,50009,163);
+insert into storestock values (10002,50009,41);
+insert into storestock values (10003,50009,64);
+insert into storestock values (10004,50009,114);
+insert into storestock values (10005,50009,182);
+insert into storestock values (10006,50009,34);
+insert into storestock values (10007,50009,91);
+insert into storestock values (10008,50009,125);
+insert into storestock values (10009,50009,153);
+insert into storestock values (10010,50009,42);
+insert into storestock values (10011,50009,172);
+insert into storestock values (10012,50009,17);
+insert into storestock values (10013,50009,97);
+insert into storestock values (10014,50009,126);
+insert into storestock values (10015,50009,30);
+insert into storestock values (10016,50009,105);
+insert into storestock values (10017,50009,61);
+insert into storestock values (10018,50009,29);
+insert into storestock values (10019,50009,26);
+insert into storestock values (10020,50009,194);
+insert into storestock values (10001,50010,6);
+insert into storestock values (10002,50010,71);
+insert into storestock values (10003,50010,38);
+insert into storestock values (10004,50010,63);
+insert into storestock values (10005,50010,129);
+insert into storestock values (10006,50010,100);
+insert into storestock values (10007,50010,123);
+insert into storestock values (10008,50010,104);
+insert into storestock values (10009,50010,123);
+insert into storestock values (10010,50010,86);
+insert into storestock values (10011,50010,54);
+insert into storestock values (10012,50010,16);
+insert into storestock values (10013,50010,149);
+insert into storestock values (10014,50010,146);
+insert into storestock values (10015,50010,90);
+insert into storestock values (10016,50010,143);
+insert into storestock values (10017,50010,127);
+insert into storestock values (10018,50010,83);
+insert into storestock values (10019,50010,52);
+insert into storestock values (10020,50010,133);
+insert into storestock values (10001,50011,145);
+insert into storestock values (10002,50011,95);
+insert into storestock values (10003,50011,175);
+insert into storestock values (10004,50011,9);
+insert into storestock values (10005,50011,80);
+insert into storestock values (10006,50011,198);
+insert into storestock values (10007,50011,1);
+insert into storestock values (10008,50011,161);
+insert into storestock values (10009,50011,150);
+insert into storestock values (10010,50011,152);
+insert into storestock values (10011,50011,166);
+insert into storestock values (10012,50011,74);
+insert into storestock values (10013,50011,126);
+insert into storestock values (10014,50011,47);
+insert into storestock values (10015,50011,179);
+insert into storestock values (10016,50011,115);
+insert into storestock values (10017,50011,6);
+insert into storestock values (10018,50011,189);
+insert into storestock values (10019,50011,101);
+insert into storestock values (10020,50011,77);
+insert into storestock values (10001,50012,157);
+insert into storestock values (10002,50012,22);
+insert into storestock values (10003,50012,155);
+insert into storestock values (10004,50012,165);
+insert into storestock values (10005,50012,159);
+insert into storestock values (10006,50012,9);
+insert into storestock values (10007,50012,25);
+insert into storestock values (10008,50012,53);
+insert into storestock values (10009,50012,119);
+insert into storestock values (10010,50012,195);
+insert into storestock values (10011,50012,95);
+insert into storestock values (10012,50012,151);
+insert into storestock values (10013,50012,68);
+insert into storestock values (10014,50012,5);
+insert into storestock values (10015,50012,50);
+insert into storestock values (10016,50012,0);
+insert into storestock values (10017,50012,63);
+insert into storestock values (10018,50012,176);
+insert into storestock values (10019,50012,105);
+insert into storestock values (10020,50012,69);
+insert into storestock values (10001,50013,12);
+insert into storestock values (10002,50013,6);
+insert into storestock values (10003,50013,130);
+insert into storestock values (10004,50013,96);
+insert into storestock values (10005,50013,175);
+insert into storestock values (10006,50013,178);
+insert into storestock values (10007,50013,190);
+insert into storestock values (10008,50013,92);
+insert into storestock values (10009,50013,161);
+insert into storestock values (10010,50013,162);
+insert into storestock values (10011,50013,194);
+insert into storestock values (10012,50013,80);
+insert into storestock values (10013,50013,19);
+insert into storestock values (10014,50013,28);
+insert into storestock values (10015,50013,24);
+insert into storestock values (10016,50013,0);
+insert into storestock values (10017,50013,42);
+insert into storestock values (10018,50013,119);
+insert into storestock values (10019,50013,101);
+insert into storestock values (10020,50013,131);
+insert into storestock values (10001,50014,124);
+insert into storestock values (10002,50014,27);
+insert into storestock values (10003,50014,108);
+insert into storestock values (10004,50014,43);
+insert into storestock values (10005,50014,130);
+insert into storestock values (10006,50014,164);
+insert into storestock values (10007,50014,107);
+insert into storestock values (10008,50014,130);
+insert into storestock values (10009,50014,158);
+insert into storestock values (10010,50014,155);
+insert into storestock values (10011,50014,85);
+insert into storestock values (10012,50014,180);
+insert into storestock values (10013,50014,14);
+insert into storestock values (10014,50014,181);
+insert into storestock values (10015,50014,72);
+insert into storestock values (10016,50014,161);
+insert into storestock values (10017,50014,34);
+insert into storestock values (10018,50014,16);
+insert into storestock values (10019,50014,199);
+insert into storestock values (10020,50014,100);
+insert into storestock values (10001,50015,179);
+insert into storestock values (10002,50015,100);
+insert into storestock values (10003,50015,146);
+insert into storestock values (10004,50015,131);
+insert into storestock values (10005,50015,12);
+insert into storestock values (10006,50015,110);
+insert into storestock values (10007,50015,100);
+insert into storestock values (10008,50015,158);
+insert into storestock values (10009,50015,118);
+insert into storestock values (10010,50015,171);
+insert into storestock values (10011,50015,22);
+insert into storestock values (10012,50015,131);
+insert into storestock values (10013,50015,198);
+insert into storestock values (10014,50015,162);
+insert into storestock values (10015,50015,27);
+insert into storestock values (10016,50015,184);
+insert into storestock values (10017,50015,17);
+insert into storestock values (10018,50015,106);
+insert into storestock values (10019,50015,28);
+insert into storestock values (10020,50015,195);
+insert into online_order values(30003,10008,100001,40001);
+insert into online_order values(30009,10010,100002,40003);
+insert into online_order values(30013,10003,100003,40003);
+insert into online_order values(30014,10005,100004,40005);
+insert into online_order values(30017,10002,100005,40005);
+insert into online_order values(30018,10012,100006,40007);
+insert into online_order values(30020,10006,100007,40012);
+insert into online_order values(30034,10010,100008,40015);
+insert into online_order values(30036,10005,100009,40014);
+insert into online_order values(30037,10011,100010,40013);
+insert into online_order values(30038,10005,100011,40013);
+insert into online_order values(30040,10008,100012,40010);
+insert into online_order values(30042,10014,100013,40009);
+insert into online_order values(30043,10014,100014,40009);
+insert into online_order values(30045,10010,100015,40007);
+insert into offline_order values(30007,10002,50001);
+insert into offline_order values(30008,10012,50006);
+insert into offline_order values(30010,10008,50006);
+insert into offline_order values(30015,10006,50012);
+insert into offline_order values(30021,10001,50015);
+insert into offline_order values(30022,10002,50015);
+insert into offline_order values(30024,10002,50007);
+insert into offline_order values(30026,10002,50007);
+insert into offline_order values(30028,10008,50002);
+insert into offline_order values(30030,10009,50002);
+insert into offline_order values(30033,10004,50011);
+insert into offline_order values(30035,10013,50013);
+insert into offline_order values(30039,10012,50014);
+insert into offline_order values(30041,10004,50013);
+insert into offline_order values(30044,10012,50004);
+insert into offline_order values(30046,10016,50002);
+insert into offline_order values(30047,10017,50011);
+insert into offline_order values(30048,10018,50007);
+insert into offline_order values(30049,10019,50005);
+insert into offline_order values(30050,10020,50001);
+insert into offline_order values(30051,10018,50012);
+insert into offline_order values(30052,10017,50005);
+insert into offline_order values(30053,10016,50013);
+insert into offline_order values(30054,10019,50004);
+insert into offline_order values(30055,10020,50007);
+insert into reorder values(30001,10009,40001,50010);
+insert into reorder values(30002,10010,40005,50002);
+insert into reorder values(30004,10015,40009,50008);
+insert into reorder values(30005,10002,40011,50007);
+insert into reorder values(30006,10014,40006,50013);
+insert into reorder values(30011,10014,40002,50015);
+insert into reorder values(30012,10001,40013,50006);
+insert into reorder values(30016,10006,40015,50001);
+insert into reorder values(30019,10012,40003,50012);
+insert into reorder values(30023,10013,40007,50011);
+insert into reorder values(30025,10013,40008,50003);
+insert into reorder values(30027,10011,40014,50005);
+insert into reorder values(30029,10005,40012,50009);
+insert into reorder values(30031,10001,40006,50004);
+insert into reorder values(30032,10007,40010,50014);
